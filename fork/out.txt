@@ -1,0 +1,21 @@
+[emanuel@localhost fork]$ tail -f out.txt 
+I am the parent, my pid is 7865 and my child is 7866
+I am the parent, my pid is 7865 and my child is 7867
+Last printf, pid is 7865
+--> Hi, I am the child, and my pid is 7866
+I am the parent, my pid is 7866 and my child is 7869
+Last printf, pid is 7866
+I am the parent, my pid is 7865 and my child is 7866
+--> Hi, I am the child, and my pid is 7867
+Last printf, pid is 7867
+--> Hi, I am the child, and my pid is 7866
+--> Hi, I am the child, and my pid is 7869
+Last printf, pid is 7869
+^C
+[1]+  Done                    ./fork2 > out.txt
+![emanuel@localhost fork]$ kate out.txt &
+[1] 7870
+![emanuel@localhost fork]$ 
+                                                                                                                              
+                                                                                                                              
+                                
