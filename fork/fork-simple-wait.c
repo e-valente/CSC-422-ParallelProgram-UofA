@@ -36,8 +36,16 @@ int main(int argc, char **argv) {
   printf("Last printf, pid is %d\n", (int)getpid());
   
   //returnpid will be -1 if the process is the child itself
+  //kid_status can be read after child process terminates
   returnpid = waitpid(kidpid, &kid_status, 0);
-  printf("Last printf2, pid is %d\nreturnpid %d\n\n", (int)getpid(), returnpid);
+  printf("Last printf2, pid is %d\nreturnpid %d\nkid_status = %d\n\n", (int)getpid(), returnpid, (int)kid_status);
+    
+   if (WIFEXITED(kid_status))
+      printf("Parent: Child %d exit; kid_status = %d\n",
+             (int)returnpid, WEXITSTATUS(kid_status));
+   else
+      printf("Parent: Child %d did not use exit\n", (int)returnpid);
+
 
    return 0;
 }
