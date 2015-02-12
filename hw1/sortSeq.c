@@ -9,11 +9,18 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <sys/time.h>
 
 
 #ifndef DEBUG
 #define DEBUG 0
 #endif
+
+struct responsetime {
+  int seconds;
+  double milliseconds;
+};
+
 
 int createArrayfromFile(char *filename, char ***array_)
 {
@@ -59,18 +66,21 @@ int createArrayfromFile(char *filename, char ***array_)
   array = (char**)malloc(sizeof(char*) * spaces);
   
   do {
-    array[count] = (char*)malloc(sizeof(char) * (strlen(ret) + 1));
-    strcpy(array[count++], ret);
-    //printf("%s\n", ret);
+    array[count] = (char*)malloc(sizeof(char) * (strlen(ret) + 1)); 
+      strcpy(array[count++], ret);
+      //printf("%s\n", ret);
    
   }while((ret = strtok(NULL, " \n")) != NULL);
-  
   
   *array_ = array;
   
  
   free(filecontent);
   fclose(myfile);
+  
+  
+  //corrects bufs for some files
+  if(array[spaces -1] == NULL) spaces--;
   
   //spaces is actually the length of the array
   return spaces;
@@ -104,9 +114,11 @@ int partition(char **array, int left, int right) {
   
   i = left;
   for(j = left + 1; j <= right; ++j) {
+   // if(array[j] != NULL && array[left] != NULL) {
     if(strcmp(array[j], array[left]) < 0) {
       ++i;
       swap(array, i, j);
+    //}
     }
   }
   
@@ -116,12 +128,83 @@ int partition(char **array, int left, int right) {
   
 }
 
+int medianOfThree(char **array, int left, int right) {
+  int mid;
+  
+  mid = (left + right) / 2;
+  
+  if(array[left] > array[mid]) 
+    swap(array, left, mid);
+  
+  if(array[left] > array[right]) 
+    swap(array, left, right);
+  
+  if(array[mid] > array[right]) 
+    swap(array, mid, right);
+  
+  swap(array, mid, right -1);
+  
+  return right -1;
+
+  
+}
+  
+int partitionMedianOfThree(char **array, int leftIndex, int rightIndex, int pivotIndex) {
+  
+  int left = leftIndex;
+  int right = rightIndex;
+  
+  while(1) {
+    
+    while(array[++left] < array[pivotIndex]);
+    
+    while(array[--right] > array[pivotIndex]);
+    
+    if(left >= right)
+      break;
+    else
+      swap(array, left, right);
+    
+    swap(array, left, rightIndex -1);
+    
+    return left;  
+  }
+  
+  return -1;
+   
+}
+/*
+ * def MedianOfThree(arr, left, right):
+    mid = (left + right)/2
+    if arr[right] < arr[left]:
+        Swap(arr, left, right)        
+    if arr[mid] < arr[left]:
+        Swap(arr, mid, left)
+    if arr[right] < arr[mid]:
+        Swap(arr, right, mid)
+    return mid
+    
+    */
+
 void quick_sort(char **array, int left, int right) {
   int r;
   
   if(right > left) {
     r = partition(array, left, right);
-    
+  
+    quick_sort(array, left, r-1);
+    quick_sort(array, r+1, right);    
+  }
+  
+  
+}
+
+void quick_sort2(char **array, int left, int right) {
+  int mid, r;
+  
+  if(right > left) {
+    mid = medianOfThree(array, left, right);
+    r = partitionMedianOfThree(array, left, right, mid);
     quick_sort(array, left, r-1);
     quick_sort(array, r+1, right);    
   }
@@ -129,12 +212,34 @@ void quick_sort(char **array, int left, int right) {
   
 }
   
+void calculateDeltaTime(struct timeval start, struct timeval end, struct responsetime *res) {
+  double milliseconds;
+  int seconds;
+  int usecs;
+  
+  seconds = end.tv_sec - start.tv_sec;
+  usecs = end.tv_usec - start.tv_usec;
+  
+  if(end.tv_usec < start.tv_usec) {
+    seconds--;
+    usecs += 1000000;
+  }
+  
+  milliseconds = 0.00000;
+  milliseconds += usecs * 0.001;
+  
+  res->seconds = seconds;
+  res->milliseconds = milliseconds;
+}
+
 
 int main(int argc, char **argv) {
   
   char *filename;
   char **array;
   int array_length;
+  struct timeval startTime, endTime;
+  struct responsetime response_time;
   
   if(argc < 2) {
     fprintf(stderr, "Usage: %s <input_file>\n\n", argv[0]);
@@ -145,7 +250,14 @@ int main(int argc, char **argv) {
   //creates the array
   array_length = createArrayfromFile(filename, &array);
   
-  quick_sort(array, 0, array_length -1);
+  gettimeofday(&startTime, NULL);
+  quick_sort2(array, 0, array_length -1);
+  gettimeofday(&endTime, NULL);
+  
+  calculateDeltaTime(startTime, endTime, &response_time);
+  
+  printf("Result: %d seconds %0.3lf milliseconds\n", response_time.seconds, 
+	 response_time.milliseconds);
   
   
   //print the content case debug is set
