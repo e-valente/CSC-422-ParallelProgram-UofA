@@ -149,49 +149,76 @@ void quick_sort2(char **array, int left, int right) {
 int main(int argc, char **argv) {
   
   char *filename;
+  char **array;
   int array_length;
   struct timeval startTime, endTime;
   struct responsetime response_time;
+  char mystr[CHARS_PER_LINE];
+  char mystr2[100];
+  FILE *myfile;
+  int count;
+  
+  void *buffer;
   
   if(argc < 2) {
     fprintf(stderr, "Usage: %s <input_file>\n\n", argv[0]);
     exit(1);
   }
   
-  filename = argv[1];
-  
-   array = mmap(NULL, sizeof(char) * (MAXLINES * CHARS_PER_LINE), PROT_READ | PROT_WRITE, 
+  buffer = mmap(NULL, sizeof(char) * (MAXLINES * CHARS_PER_LINE), PROT_READ | PROT_WRITE, 
        MAP_ANONYMOUS | MAP_SHARED, -1, 0);
   
-  if(array == MAP_FAILED) {
+  if(buffer == MAP_FAILED) {
     fprintf(stderr, "Error mapping memory!\n");
     exit(1);
   }
+  /*
+  strcpy(mystr,"Agora vai!");
+  strcpy(mystr2,"Agora vai2!");
   
-  array_length = createArrayfromFile(filename);
+  array = buffer;
+  
+  memcpy(buffer, mystr, SIZE_OF_LINE);
+  memcpy(buffer + SIZE_OF_LINE , mystr2, SIZE_OF_LINE);
+  
+  fprintf(stdout, "%s\n", (char*)buffer + SIZE_OF_LINE); 
+  */
+  
+  filename = argv[1];
+  myfile = fopen(filename, "r");
+  
+  if(myfile == NULL) {
+    fprintf(stderr, "Error: Opening File!\n\n", argv[0]);
+    exit(1);
+    
+  }
+  
+  
+  count = 0;
+  
+  //while(fgets(mystr, SIZE_OF_LINE, myfile)) {
+  while(fgets(buffer + (count++ * SIZE_OF_LINE), SIZE_OF_LINE, myfile)) {
+     //fprintf(stdout,"%s", mystr);
+     //memcpy(buffer + count++ * SIZE_OF_LINE , mystr, SIZE_OF_LINE);
+     fprintf(stdout,"%s", (char*)buffer +  (count-1) * SIZE_OF_LINE );
+      //fgets(buffer + count++ * SIZE_OF_LINE, SIZE_OF_LINE, myfile);
+  }
+  
+  
+  
+  
+  
+  fclose(myfile);
+  
+  
+  munmap(buffer, MAXLINES * SIZE_OF_LINE);
   
  
   
-  gettimeofday(&startTime, NULL);
-  //quick_sort2(array, 0, array_length -1);
-  gettimeofday(&endTime, NULL);
+ 
   
-  calculateDeltaTime(startTime, endTime, &response_time);
-  
-  printf("Result: %d seconds %0.3lf milliseconds\n", response_time.seconds, 
-	 response_time.milliseconds);
-  
-  
-  //print the content case debug is set
-  if(DEBUG) 
-  for(int i =0; i < array_length; i++)
-    fprintf(stdout,"%s", (char*)array +  (i) * SIZE_OF_LINE);
-  
-      
-  
-  
-  munmap(array, MAXLINES * SIZE_OF_LINE);
-  
+  //FREE memory from array
+ 
   return 0;
   
 }

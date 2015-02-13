@@ -10,7 +10,6 @@
 #include <stdlib.h>
 #include <string.h>
 #include <sys/time.h>
-#include <sys/mman.h>
 #include "utils.h"
 
 
@@ -149,6 +148,7 @@ void quick_sort2(char **array, int left, int right) {
 int main(int argc, char **argv) {
   
   char *filename;
+  char **array;
   int array_length;
   struct timeval startTime, endTime;
   struct responsetime response_time;
@@ -158,22 +158,12 @@ int main(int argc, char **argv) {
     exit(1);
   }
   
-  filename = argv[1];
-  
-   array = mmap(NULL, sizeof(char) * (MAXLINES * CHARS_PER_LINE), PROT_READ | PROT_WRITE, 
-       MAP_ANONYMOUS | MAP_SHARED, -1, 0);
-  
-  if(array == MAP_FAILED) {
-    fprintf(stderr, "Error mapping memory!\n");
-    exit(1);
-  }
-  
-  array_length = createArrayfromFile(filename);
-  
- 
+  filename = argv[1]; 
+  //creates the array
+  array_length = createArrayfromFile(filename, &array);
   
   gettimeofday(&startTime, NULL);
-  //quick_sort2(array, 0, array_length -1);
+  quick_sort2(array, 0, array_length -1);
   gettimeofday(&endTime, NULL);
   
   calculateDeltaTime(startTime, endTime, &response_time);
@@ -183,15 +173,17 @@ int main(int argc, char **argv) {
   
   
   //print the content case debug is set
-  if(DEBUG) 
+  if(DEBUG) {
   for(int i =0; i < array_length; i++)
-    fprintf(stdout,"%s", (char*)array +  (i) * SIZE_OF_LINE);
-  
+    printf("%s \n", array[i]);
       
+  }
   
-  
-  munmap(array, MAXLINES * SIZE_OF_LINE);
-  
+  //FREE memory from array
+  for(int i =0; i < array_length; i++)
+    free(array[i]);
+  free(array);
+
   return 0;
   
 }

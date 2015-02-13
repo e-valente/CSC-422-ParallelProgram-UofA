@@ -10,7 +10,6 @@
 #include <stdlib.h>
 #include <string.h>
 #include <sys/time.h>
-#include <sys/mman.h>
 #include "utils.h"
 
 
@@ -146,35 +145,112 @@ void quick_sort2(char **array, int left, int right) {
 }
   
 
+void merge(char **array, int left, int mid, int right)
+{
+    //int b[10000];
+    int i, j;
+    char **tmparray = (char**)malloc(sizeof(char*) * (right - left));
+    
+    for(int k=0; k < right - left; k++) {
+      tmparray[k] = (char*)malloc(sizeof(char) * 100);
+      
+    }
+   
+   
+    i = 0;
+    j = 0;
+    int k = 0;
+    
+    while(i <= mid && j <= right) {
+        if(array[i] <= array[j])
+            //b[k++] = a[i++];
+	  strcpy(tmparray[k++], array[i++]);
+        else
+            //b[k++] = a[j++];
+	  strcpy(tmparray[k++], array[j++]);
+    }
+    
+    while(i <= mid)
+        //b[k++] = a[i++];
+      strcpy(tmparray[k++], array[i++]);
+  
+    while(j <= right)
+        //b[k++] = a[j++];
+      strcpy(tmparray[k++], array[j++]);
+  
+    k--;
+    while(k >= 0) {
+        //a[low + k] = b[k];
+	if(strlen(tmparray[k]) < strlen(array[i])) {
+	  tmparray[k] = (char*)realloc(tmparray[k], sizeof(char) * (strlen(array[i]) + 1));
+	}
+	strcpy(tmparray[left +k], array[i++]);
+        k--;
+    }
+    
+    for(int i=0; i < right - left; i++) {
+      free(tmparray[i]);
+      
+    }
+    
+    free(tmparray);  
+    
+  
+}  
+
+void mergesort (char **array, int left, int right) {
+    if (right - left < 2)
+        return;
+    int m = (right - left) / 2;
+    mergesort(array, left, m);
+    mergesort(array, m+1, right);
+    
+    merge(array, left, m, right);
+}
+
 int main(int argc, char **argv) {
   
   char *filename;
+  char **array, **merged_array;
   int array_length;
   struct timeval startTime, endTime;
   struct responsetime response_time;
+  pid_t kidpid, returnpid;
+  int kid_status;
   
   if(argc < 2) {
     fprintf(stderr, "Usage: %s <input_file>\n\n", argv[0]);
     exit(1);
   }
   
-  filename = argv[1];
-  
-   array = mmap(NULL, sizeof(char) * (MAXLINES * CHARS_PER_LINE), PROT_READ | PROT_WRITE, 
-       MAP_ANONYMOUS | MAP_SHARED, -1, 0);
-  
-  if(array == MAP_FAILED) {
-    fprintf(stderr, "Error mapping memory!\n");
-    exit(1);
-  }
-  
-  array_length = createArrayfromFile(filename);
-  
- 
+  filename = argv[1]; 
+  //creates the array
+  array_length = createArrayfromFile(filename, &array);
   
   gettimeofday(&startTime, NULL);
-  //quick_sort2(array, 0, array_length -1);
+  
+  kidpid = fork();
+  //child
+  if(kidpid == 0) {
+    printf("child\n");
+    quick_sort2(array, array_length/2 +1, array_length -1);
+    return 0;
+    
+  } 
+  //parent
+  else {
+    quick_sort2(array, 0, array_length/2);
+    
+    
+  }
+  
+  returnpid = waitpid(kidpid, &kid_status, 0);
+  
+  mergesort(array, 0, array_length);
+  
+  printf("Just one time\n");
   gettimeofday(&endTime, NULL);
+  
   
   calculateDeltaTime(startTime, endTime, &response_time);
   
@@ -183,15 +259,17 @@ int main(int argc, char **argv) {
   
   
   //print the content case debug is set
-  if(DEBUG) 
+  if(DEBUG) {
   for(int i =0; i < array_length; i++)
-    fprintf(stdout,"%s", (char*)array +  (i) * SIZE_OF_LINE);
-  
+    printf("%s \n", array[i]);
       
+  }
   
-  
-  munmap(array, MAXLINES * SIZE_OF_LINE);
-  
+  //FREE memory from array
+  for(int i =0; i < array_length; i++)
+    free(array[i]);
+  free(array);
+
   return 0;
   
 }

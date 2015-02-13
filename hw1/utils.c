@@ -5,69 +5,25 @@
 #include "utils.h"
 
 
-
-int createArrayfromFile(char *filename, char ***array_)
+int createArrayfromFile(char *filename)
 {
-  char **array;
+  
   FILE *myfile;
-  char *filecontent;
-  char *ret;
-  int length, count;
-
+  int count;
   
-  myfile = fopen(filename, "r");
+  myfile = fopen(filename, "r");  
   
-  fseek(myfile, 0, SEEK_END);
-  length = ftell(myfile);
-  fseek(myfile,0, SEEK_SET);
-  
-  //contais a one dimension array with all the content of file
-  filecontent = (char*)malloc(sizeof(char) * (length +1));
-  
-  count = 0;
-  
-  //reads the file content
-  int spaces = 0;
-  int flagspace = 0;
-  while((filecontent[count] = fgetc(myfile)) != EOF) {
-    if(filecontent[count] == ' ' || filecontent[count] == '\n') {
-      if(flagspace == 0) {
-	spaces++;
-      }
-      
-      flagspace = 1;
-    }
-    else flagspace = 0;
+   if(myfile == NULL) {
+    fprintf(stderr, "Error: Opening File!\n\n", filename);
+    exit(1);
     
-    count++;
   }
-  filecontent[count-1] = '\0';
-  
-  //find the substrings 
-  ret = strtok(filecontent, " \n");
   count = 0;
+  while(fgets(array + (count++ * SIZE_OF_LINE), SIZE_OF_LINE, myfile));
   
-  array = (char**)malloc(sizeof(char*) * spaces);
   
-  do {
-    array[count] = (char*)malloc(sizeof(char) * (strlen(ret) + 1)); 
-      strcpy(array[count++], ret);
-      //printf("%s\n", ret);
-   
-  }while((ret = strtok(NULL, " \n")) != NULL);
-  
-  *array_ = array;
-  
- 
-  free(filecontent);
   fclose(myfile);
-  
-  
-  //corrects bufs for some files
-  if(array[spaces -1] == NULL) spaces--;
-  
-  //spaces is actually the length of the array
-  return spaces;
+  return count;
   
 }
 
