@@ -10,6 +10,9 @@
 #include <stdlib.h>
 #include <string.h>
 #include <sys/time.h>
+#include <sys/types.h>
+#include <sys/wait.h>
+#include <sys/mman.h>
 #include "utils.h"
 
 
@@ -18,200 +21,38 @@
 #define DEBUG 0
 #endif
 
-
-void swap(char **array, int i, int j) {
-  char *tmp;
-  int len_i = strlen(array[i]);
-  int len_j = strlen(array[j]);
-  
-  tmp = (char*)malloc(sizeof(char)* (len_i + 1));
-  strcpy(tmp, array[i]);
-  
-  if(len_i < len_j) 
-    array[i] = (char*)realloc(array[i], sizeof(char) * (len_j +1));
-  
-  else if(len_i > len_j) 
-    array[j] = (char*)realloc(array[j], sizeof(char) * (len_i +1));
-  
-  strcpy(array[i], array[j]);
-  strcpy(array[j], tmp); 
-  
-  free(tmp);
-  
-  
-}
-
-int partition(char **array, int left, int right) {
-  int i, j;
-  
-  i = left;
-  for(j = left + 1; j <= right; ++j) {
-   // if(array[j] != NULL && array[left] != NULL) {
-    if(strcmp(array[j], array[left]) < 0) {
-      ++i;
-      swap(array, i, j);
-    //}
-    }
-  }
-  
-  swap(array, left, i);
-  
-  return i;
-  
-}
-
-int medianOfThree(char **array, int left, int right) {
-  int mid;
-  
-  mid = (left + right) / 2;
-  
-  if(array[left] > array[mid]) 
-    swap(array, left, mid);
-  
-  if(array[left] > array[right]) 
-    swap(array, left, right);
-  
-  if(array[mid] > array[right]) 
-    swap(array, mid, right);
-  
-  swap(array, mid, right -1);
-  
-  return right -1;
-
-  
-}
-  
-int partitionMedianOfThree(char **array, int leftIndex, int rightIndex, int pivotIndex) {
-  
-  int left = leftIndex;
-  int right = rightIndex;
-  
-  while(1) {
-    
-    while(array[++left] < array[pivotIndex]);
-    
-    while(array[--right] > array[pivotIndex]);
-    
-    if(left >= right)
-      break;
-    else
-      swap(array, left, right);
-    
-    swap(array, left, rightIndex -1);
-    
-    return left;  
-  }
-  
-  return -1;
-   
-}
-/*
- * def MedianOfThree(arr, left, right):
-    mid = (left + right)/2
-    if arr[right] < arr[left]:
-        Swap(arr, left, right)        
-    if arr[mid] < arr[left]:
-        Swap(arr, mid, left)
-    if arr[right] < arr[mid]:
-        Swap(arr, right, mid)
-    return mid
-    
-    */
-
-void quick_sort(char **array, int left, int right) {
-  int r;
-  
-  if(right > left) {
-    r = partition(array, left, right);
-  
-    quick_sort(array, left, r-1);
-    quick_sort(array, r+1, right);    
-  }
-  
-  
-}
-
-void quick_sort2(char **array, int left, int right) {
-  int mid, r;
-  
-  if(right > left) {
-    mid = medianOfThree(array, left, right);
-    r = partitionMedianOfThree(array, left, right, mid);
-    quick_sort(array, left, r-1);
-    quick_sort(array, r+1, right);    
-  }
-  
-  
-}
-  
-
-void merge(char **array, int left, int mid, int right)
+//mid contains the last vector's right session 
+void merge(int left, int mid, int right)
 {
-    //int b[10000];
     int i, j;
-    char **tmparray = (char**)malloc(sizeof(char*) * (right - left));
     
-    for(int k=0; k < right - left; k++) {
-      tmparray[k] = (char*)malloc(sizeof(char) * 100);
-      
-    }
-   
-   
-    i = 0;
-    j = 0;
+    i = left;
+    j = mid;
     int k = 0;
-    
-    while(i <= mid && j <= right) {
-        if(array[i] <= array[j])
-            //b[k++] = a[i++];
-	  strcpy(tmparray[k++], array[i++]);
-        else
-            //b[k++] = a[j++];
-	  strcpy(tmparray[k++], array[j++]);
-    }
-    
-    while(i <= mid)
-        //b[k++] = a[i++];
-      strcpy(tmparray[k++], array[i++]);
-  
-    while(j <= right)
-        //b[k++] = a[j++];
-      strcpy(tmparray[k++], array[j++]);
-  
-    k--;
-    while(k >= 0) {
-        //a[low + k] = b[k];
-	if(strlen(tmparray[k]) < strlen(array[i])) {
-	  tmparray[k] = (char*)realloc(tmparray[k], sizeof(char) * (strlen(array[i]) + 1));
-	}
-	strcpy(tmparray[left +k], array[i++]);
-        k--;
-    }
-    
-    for(int i=0; i < right - left; i++) {
-      free(tmparray[i]);
+   
+    while(i < mid && j < right) {
+       if(strcmp((array + i * SIZE_OF_LINE), (array + j * SIZE_OF_LINE)) < 0) 
+	  strcpy((merged_array + k++ * SIZE_OF_LINE), (array + i++ * SIZE_OF_LINE));
+       
+       else 
+	 strcpy((merged_array + k++ * SIZE_OF_LINE), (array + j++ * SIZE_OF_LINE));   
       
     }
     
-    free(tmparray);  
+    while(i < mid) 
+       strcpy((merged_array + k++ * SIZE_OF_LINE), (array + i++ * SIZE_OF_LINE));
     
-  
+    while(j < right) 
+       strcpy((merged_array + k++ * SIZE_OF_LINE), (array + j++ * SIZE_OF_LINE));
+    
+
 }  
 
-void mergesort (char **array, int left, int right) {
-    if (right - left < 2)
-        return;
-    int m = (right - left) / 2;
-    mergesort(array, left, m);
-    mergesort(array, m+1, right);
-    
-    merge(array, left, m, right);
-}
+
 
 int main(int argc, char **argv) {
   
   char *filename;
-  char **array, **merged_array;
   int array_length;
   struct timeval startTime, endTime;
   struct responsetime response_time;
@@ -223,52 +64,77 @@ int main(int argc, char **argv) {
     exit(1);
   }
   
-  filename = argv[1]; 
-  //creates the array
-  array_length = createArrayfromFile(filename, &array);
+  filename = argv[1];
+  
+  array = mmap(NULL, sizeof(char) * (MAXLINES * CHARS_PER_LINE), PROT_READ | PROT_WRITE, 
+       MAP_ANONYMOUS | MAP_SHARED, -1, 0);
+  
+  
+  if(array == MAP_FAILED) {
+    fprintf(stderr, "Error mapping memory!\n");
+    exit(1);
+  }
+  
+  merged_array = mmap(NULL, sizeof(char) * (MAXLINES * CHARS_PER_LINE), PROT_READ | PROT_WRITE, 
+       MAP_ANONYMOUS | MAP_SHARED, -1, 0);
+  
+  
+  if(merged_array == MAP_FAILED) {
+    fprintf(stderr, "Error mapping memory!\n");
+    exit(1);
+  }
+  
+  array_length = createArrayfromFile(filename);
+
+  
   
   gettimeofday(&startTime, NULL);
   
   kidpid = fork();
   //child
   if(kidpid == 0) {
-    printf("child\n");
-    quick_sort2(array, array_length/2 +1, array_length -1);
+   // printf("child\n");
+    quick_sort(array_length/2 +1, array_length -1);
     return 0;
     
   } 
   //parent
   else {
-    quick_sort2(array, 0, array_length/2);
-    
+     //printf("parent\n");
+    quick_sort(0, array_length/2);
     
   }
   
   returnpid = waitpid(kidpid, &kid_status, 0);
+  merge(0, array_length/2 +1, (array_length ));
   
-  mergesort(array, 0, array_length);
-  
-  printf("Just one time\n");
   gettimeofday(&endTime, NULL);
   
   
   calculateDeltaTime(startTime, endTime, &response_time);
   
-  printf("Result: %d seconds %0.3lf milliseconds\n", response_time.seconds, 
-	 response_time.milliseconds);
-  
-  
+ 
   //print the content case debug is set
-  if(DEBUG) {
-  for(int i =0; i < array_length; i++)
-    printf("%s \n", array[i]);
-      
+  if(!DEBUG) {
+  fprintf(stdout, "total: %d\n", array_length);
+  for(int i =0; i < array_length/2 +1; i++)
+    fprintf(stdout,"%s", (char*)merged_array +  (i) * SIZE_OF_LINE);
+  
+  fprintf(stdout, "--------\n");
+  for(int i =array_length/2 +1; i < array_length; i++)
+    fprintf(stdout,"%s", (char*)merged_array +  (i) * SIZE_OF_LINE);
   }
   
-  //FREE memory from array
-  for(int i =0; i < array_length; i++)
-    free(array[i]);
-  free(array);
+  
+  printf("Result: %d seconds %0.3lf milliseconds\n", response_time.seconds, 
+	 response_time.milliseconds);
+      
+  
+  
+  munmap(array, MAXLINES * SIZE_OF_LINE);
+  munmap(merged_array, MAXLINES * SIZE_OF_LINE);
+  
+  
 
   return 0;
   

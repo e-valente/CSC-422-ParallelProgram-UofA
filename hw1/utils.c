@@ -23,7 +23,7 @@ int createArrayfromFile(char *filename)
   
   
   fclose(myfile);
-  return count;
+  return count -1;
   
 }
 

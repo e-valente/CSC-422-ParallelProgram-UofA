@@ -7,6 +7,7 @@
 #define SIZE_OF_LINE sizeof(char) * CHARS_PER_LINE
 
 void* array;
+void* merged_array;
 
 struct responsetime {
   int seconds;
