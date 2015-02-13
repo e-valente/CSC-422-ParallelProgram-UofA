@@ -20,36 +20,9 @@
 #endif
 
 
-void swap(int i, int j) {
-  char tmp[SIZE_OF_LINE];
-  
-  strcpy(tmp, (array + i * SIZE_OF_LINE));
-  
-  strcpy((array + i * SIZE_OF_LINE), (array + j * SIZE_OF_LINE));
-  strcpy((array + j * SIZE_OF_LINE), tmp); 
-  
-  
-}
 
-int partition(int left, int right) {
-  int i, j;
-  
-  i = left;
-  for(j = left + 1; j <= right; ++j) {
-   // if(array[j] != NULL && array[left] != NULL) {
-    if(strcmp((array + j * SIZE_OF_LINE), (array + left * SIZE_OF_LINE)) < 0) {
-      ++i;
-      if(i != j)
-	swap(i, j);
-    //}
-    }
-  }
-  
-  swap(left, i);
-  
-  return i;
-  
-}
+
+
 
 int medianOfThree(int left, int right) {
   int mid;
@@ -91,10 +64,10 @@ int partitionMedianOfThree(int leftIndex, int rightIndex, int pivotIndex) {
     
     if(left >= right)
       break;
-    else
+    else {
       if(left != right)
 	swap(left, right);
-    
+    }
     
   }
   
@@ -115,28 +88,40 @@ int partitionMedianOfThree(int leftIndex, int rightIndex, int pivotIndex) {
     
     */
 
-void quick_sort(int left, int right) {
-  int r;
-  
-  if(right > left) {
-    r = partition(left, right);
-  
-    quick_sort(left, r-1);
-    quick_sort(r+1, right);    
-  }
-  
-  
+
+void manualSort(int left, int right) {
+    int size = right - left + 1;
+    if (size <= 1)
+      return; // no sort necessary
+    if (size == 2) { // 2-sort left and right
+      if (array + left * SIZE_OF_LINE > array + right * SIZE_OF_LINE)
+        swap(left, right);
+      return;
+    } else // size is 3
+    { // 3-sort left, center, & right
+      if (array + left * SIZE_OF_LINE > array + (right -1) * SIZE_OF_LINE)
+        swap(left, right - 1); // left, center
+      if (array + left * SIZE_OF_LINE > array + right * SIZE_OF_LINE)
+        swap(left, right); // left, right
+      if (array + (right -1) * SIZE_OF_LINE > array + right * SIZE_OF_LINE)
+        swap(right - 1, right); // center, right
+    }
 }
+  
 
 void quick_sort2(int left, int right) {
   int mid, r;
   
-  if(right > left) {
-    mid = medianOfThree(left, right);
-    r = partitionMedianOfThree(left, right, mid);
-    quick_sort2(left, r-1);
-    quick_sort2(r+1, right);    
-  }
+  int size = right - left + 1;
+    if (size <= 3) // manual sort if small
+      manualSort(left, right);
+    else {// quicksort if large
+      mid = medianOfThree(left, right);
+      r = partitionMedianOfThree(left, right, mid);
+      quick_sort2(left, r-1);
+      quick_sort2(r+1, right);    
+  
+    }
   
   
 }
