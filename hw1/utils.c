@@ -14,7 +14,7 @@ int createArrayfromFile(char *filename)
   myfile = fopen(filename, "r");  
   
    if(myfile == NULL) {
-    fprintf(stderr, "Error: Opening File!\n\n", filename);
+    fprintf(stderr, "Error: Opening file %s\n\n", filename);
     exit(1);
     
   }
