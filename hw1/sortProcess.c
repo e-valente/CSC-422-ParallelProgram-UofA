@@ -22,28 +22,53 @@
 #endif
 
 //mid contains the last vector's right session 
-void merge(int left, int mid, int right)
+void merge(int left, int mid, int right, int direction)
 {
     int i, j;
     
     i = left;
     j = mid;
-    int k = 0;
-   
-    while(i < mid && j < right) {
-       if(strcmp((array + i * SIZE_OF_LINE), (array + j * SIZE_OF_LINE)) < 0) 
-	  strcpy((merged_array + k++ * SIZE_OF_LINE), (array + i++ * SIZE_OF_LINE));
-       
-       else 
-	 strcpy((merged_array + k++ * SIZE_OF_LINE), (array + j++ * SIZE_OF_LINE));   
+    int k = left;
+    
+    
+   //array -> merged_array
+    if(direction == 0) {
+      while(i < mid && j < right) {
+	if(strcmp((array + i * SIZE_OF_LINE), (array + j * SIZE_OF_LINE)) < 0) 
+	    strcpy((merged_array + k++ * SIZE_OF_LINE), (array + i++ * SIZE_OF_LINE));
+	
+	else 
+	  strcpy((merged_array + k++ * SIZE_OF_LINE), (array + j++ * SIZE_OF_LINE));   
+	
+      }
       
+      while(i < mid) 
+	strcpy((merged_array + k++ * SIZE_OF_LINE), (array + i++ * SIZE_OF_LINE));
+      
+      while(j < right) 
+       strcpy((merged_array + k++ * SIZE_OF_LINE), (array + j++ * SIZE_OF_LINE));
     }
     
-    while(i < mid) 
-       strcpy((merged_array + k++ * SIZE_OF_LINE), (array + i++ * SIZE_OF_LINE));
-    
-    while(j < right) 
-       strcpy((merged_array + k++ * SIZE_OF_LINE), (array + j++ * SIZE_OF_LINE));
+    //direction != 0
+    //=> merged_array -> array
+    else {
+      while(i < mid && j < right) {
+	if(strcmp((merged_array + i * SIZE_OF_LINE), (merged_array + j * SIZE_OF_LINE)) < 0) 
+	    strcpy((array + k++ * SIZE_OF_LINE), (merged_array + i++ * SIZE_OF_LINE));
+	
+	else 
+	  strcpy((array + k++ * SIZE_OF_LINE), (merged_array + j++ * SIZE_OF_LINE));   
+	
+      }
+      
+      while(i < mid) 
+	strcpy((array + k++ * SIZE_OF_LINE), (merged_array + i++ * SIZE_OF_LINE));
+      
+      while(j < right) 
+       strcpy((array + k++ * SIZE_OF_LINE), (merged_array + j++ * SIZE_OF_LINE));
+      
+      
+    }
     
 
 }  
@@ -56,7 +81,7 @@ int main(int argc, char **argv) {
   int array_length;
   struct timeval startTime, endTime;
   struct responsetime response_time;
-  pid_t kidpid, returnpid;
+  pid_t kidpid[4], kidpid2[4], returnpid;
   int kid_status;
   
   if(argc < 2) {
@@ -90,23 +115,52 @@ int main(int argc, char **argv) {
   
   gettimeofday(&startTime, NULL);
   
-  kidpid = fork();
+  for(int i = 0; i < 4; i++) {
+  
+   kidpid[i] = fork();
   //child
-  if(kidpid == 0) {
-   // printf("child\n");
-    quick_sort(array_length/2 +1, array_length -1);
+  if(kidpid[i] == 0) {
+      //printf("--> Hi, I am the child %d, and my pid is %d, my parent id is %d\n", i, (int)getpid(), getppid());
+
+    //quick_sort(array_length/2 +1, array_length -1);
+    // printf("--> QUICK %d %d\n", i * (array_length/4), (i+1) * (array_length/4) -1);
+     quick_sort(i * (array_length/4), (i+1) * (array_length/4) -1);
+    return 0;
+    
+    } 
+ 
+  }//for 
+  
+  //WAIT QUICKSORT
+  for(int i=0; i < 4; i++)
+    returnpid = waitpid(kidpid[i], &kid_status, 0);
+  
+  
+  //MERGE
+  for(int i = 0; i < 2; i++) {
+  
+   kidpid2[i] = fork();
+  //child
+  if(kidpid2[i] == 0) {
+      //printf("--> Hi, I am the child %d, and my pid is %d, my parent id is %d\n", i, (int)getpid(), getppid());
+      int start = i * (array_length/2);
+      int end = (i+1) * (array_length/2);
+
+    //quick_sort(array_length/2 +1, array_length -1);
+    //merge(0, array_length/2 +1, (array_length ));
+      //printf("merge %d %d %d\n\n",start, start + (end - start)/2 + 1, end);
+      merge(start, start + (end - start)/2, end, 0);
     return 0;
     
   } 
-  //parent
-  else {
-     //printf("parent\n");
-    quick_sort(0, array_length/2);
-    
-  }
+ 
+ 
+  }//for 
   
-  returnpid = waitpid(kidpid, &kid_status, 0);
-  merge(0, array_length/2 +1, (array_length ));
+  returnpid = waitpid(kidpid2[0], &kid_status, 0);
+  returnpid = waitpid(kidpid2[1], &kid_status, 0);
+ // memcpy((char*)array,(char*) merged_array, sizeof(char) * (MAXLINES * CHARS_PER_LINE));  
+  merge(0, array_length/2, (array_length), 1);
   
   gettimeofday(&endTime, NULL);
   
@@ -117,12 +171,15 @@ int main(int argc, char **argv) {
   //print the content case debug is set
   if(!DEBUG) {
   fprintf(stdout, "total: %d\n", array_length);
-  for(int i =0; i < array_length/2 +1; i++)
-    fprintf(stdout,"%s", (char*)merged_array +  (i) * SIZE_OF_LINE);
-  
+  for(int i =0; i < array_length; i++)
+    //fprintf(stdout,"%s", (char*)merged_array +  (i) * SIZE_OF_LINE);
+    fprintf(stdout,"%s", (char*)array +  (i) * SIZE_OF_LINE);
+  /*
   fprintf(stdout, "--------\n");
-  for(int i =array_length/2 +1; i < array_length; i++)
+  for(int i =array_length/2; i < array_length; i++)
     fprintf(stdout,"%s", (char*)merged_array +  (i) * SIZE_OF_LINE);
+    //fprintf(stdout,"%s", (char*)array +  (i) * SIZE_OF_LINE);
+  */
   }
   
   
