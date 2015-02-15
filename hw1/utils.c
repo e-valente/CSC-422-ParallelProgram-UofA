@@ -91,3 +91,34 @@ void quick_sort(int left, int right) {
   
 }
 
+int isPowerOfTwo(int n){
+  if (n == 0)
+    return TRUE;
+  while(n != 1) {
+    if(n%2 != 0)
+      return FALSE;
+    n = n/2;
+  }
+  return TRUE;
+}
+
+int exponentOfPowerOf2(int n){
+  
+  int exponent = 0;
+  
+  if (n %2 != 0)
+    return FALSE;
+  
+  while(n > 1) {
+    n = n/2;
+    exponent += 1;
+  }
+  return exponent;
+}
+
+void change_merge_direction() {
+ if(merge_direction == FALSE) 
+    merge_direction = TRUE;
+ else
+  merge_direction = FALSE;
+}

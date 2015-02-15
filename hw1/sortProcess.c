@@ -13,6 +13,7 @@
 #include <sys/types.h>
 #include <sys/wait.h>
 #include <sys/mman.h>
+#include <math.h>
 #include "utils.h"
 
 
@@ -22,7 +23,7 @@
 #endif
 
 //mid contains the last vector's right session 
-void merge(int left, int mid, int right, int direction)
+void merge(int left, int mid, int right, int merge_direction)
 {
     int i, j;
     
@@ -32,7 +33,7 @@ void merge(int left, int mid, int right, int direction)
     
     
    //array -> merged_array
-    if(direction == 0) {
+    if(merge_direction == FALSE) {
       while(i < mid && j < right) {
 	if(strcmp((array + i * SIZE_OF_LINE), (array + j * SIZE_OF_LINE)) < 0) 
 	    strcpy((merged_array + k++ * SIZE_OF_LINE), (array + i++ * SIZE_OF_LINE));
@@ -74,22 +75,28 @@ void merge(int left, int mid, int right, int direction)
 }  
 
 
-
 int main(int argc, char **argv) {
   
   char *filename;
-  int array_length;
+  int array_length, total_merge_iterations;
   struct timeval startTime, endTime;
   struct responsetime response_time;
-  pid_t kidpid[4], kidpid2[4], returnpid;
+  pid_t kidpid[MAXPROCESSES], returnpid;
   int kid_status;
   
-  if(argc < 2) {
-    fprintf(stderr, "Usage: %s <input_file>\n\n", argv[0]);
+  if(argc < 3) {
+    fprintf(stderr, "Usage: %s <# processes> <input_file>\n\n", argv[0]);
     exit(1);
   }
   
-  filename = argv[1];
+  total_processes = atoi(argv[1]);
+  if(isPowerOfTwo(total_processes) == FALSE || total_processes == 0 || 
+    total_processes == 1) {
+    fprintf(stderr,"The processes must be power of 2\n\n");
+    exit(1);
+  }
+  
+  filename = argv[2];
   
   array = mmap(NULL, sizeof(char) * (MAXLINES * CHARS_PER_LINE), PROT_READ | PROT_WRITE, 
        MAP_ANONYMOUS | MAP_SHARED, -1, 0);
@@ -115,72 +122,88 @@ int main(int argc, char **argv) {
   
   gettimeofday(&startTime, NULL);
   
-  for(int i = 0; i < 4; i++) {
-  
+  for(int i = 0; i < total_processes; i++) {
    kidpid[i] = fork();
+   
   //child
   if(kidpid[i] == 0) {
-      //printf("--> Hi, I am the child %d, and my pid is %d, my parent id is %d\n", i, (int)getpid(), getppid());
-
-    //quick_sort(array_length/2 +1, array_length -1);
-    // printf("--> QUICK %d %d\n", i * (array_length/4), (i+1) * (array_length/4) -1);
-     quick_sort(i * (array_length/4), (i+1) * (array_length/4) -1);
-    return 0;
-    
+    quick_sort(i * (array_length/total_processes), (i+1) * (array_length/total_processes) -1);
+    return 0; 
     } 
- 
   }//for 
   
+  
   //WAIT QUICKSORT
-  for(int i=0; i < 4; i++)
+  for(int i=0; i < total_processes; i++)
     returnpid = waitpid(kidpid[i], &kid_status, 0);
   
   
-  //MERGE
-  for(int i = 0; i < 2; i++) {
+  total_merge_iterations = exponentOfPowerOf2(total_processes);
+  //the last merge is out of the for loop
+  total_merge_iterations--; 
   
-   kidpid2[i] = fork();
-  //child
-  if(kidpid2[i] == 0) {
-      //printf("--> Hi, I am the child %d, and my pid is %d, my parent id is %d\n", i, (int)getpid(), getppid());
-      int start = i * (array_length/2);
-      int end = (i+1) * (array_length/2);
-
-    //quick_sort(array_length/2 +1, array_length -1);
-    //merge(0, array_length/2 +1, (array_length ));
-      //printf("merge %d %d %d\n\n",start, start + (end - start)/2 + 1, end);
-      merge(start, start + (end - start)/2, end, 0);
-    return 0;
+  merge_direction = FALSE;
+  
+  //if > 1 we have 2 or more processes
+  if(total_merge_iterations >0 ) {
     
-  } 
+	
+    for(int i=0; i<total_merge_iterations; i++) {
+      
+      //for 4 process total_merge_iterations = 1
+      int total_processes_to_merge = (int)pow(2, total_merge_iterations -i);
+      double delta_size = array_length/total_processes_to_merge;
+    
+      for(int j = 0; j < total_processes_to_merge; j++) {
+	kidpid[j] = fork();
+	//child
+	if(kidpid[j] == 0) {
+    
+
+	int start = j * delta_size;
+	int end = start + delta_size;
+	
+	//void merge(int left, int mid, int right, int merge_direction)
+	merge(start, (start + end)/2, end, merge_direction);
+	return 0;
+	}
+	
+      }
+	
+	 //WAIT all processes to merge
+      for(int j=0; j < total_processes_to_merge; j++)
+	returnpid = waitpid(kidpid[j], &kid_status, 0);
+      
+       change_merge_direction();
+     
  
- 
-  }//for 
+    }//for    
+    
+  }
   
-  returnpid = waitpid(kidpid2[0], &kid_status, 0);
-  returnpid = waitpid(kidpid2[1], &kid_status, 0);
- // memcpy((char*)array,(char*) merged_array, sizeof(char) * (MAXLINES * CHARS_PER_LINE));  
-  merge(0, array_length/2, (array_length), 1);
+  printf("total_merge_iterations %d\n", total_merge_iterations);
   
+  if(total_merge_iterations == 0 && total_processes > 2)
+    change_merge_direction();
+  
+  merge(0, array_length/2, (array_length), merge_direction);
   gettimeofday(&endTime, NULL);
+  change_merge_direction();
   
+
   
   calculateDeltaTime(startTime, endTime, &response_time);
   
  
   //print the content case debug is set
-  if(!DEBUG) {
-  fprintf(stdout, "total: %d\n", array_length);
-  for(int i =0; i < array_length; i++)
-    //fprintf(stdout,"%s", (char*)merged_array +  (i) * SIZE_OF_LINE);
-    fprintf(stdout,"%s", (char*)array +  (i) * SIZE_OF_LINE);
-  /*
-  fprintf(stdout, "--------\n");
-  for(int i =array_length/2; i < array_length; i++)
-    fprintf(stdout,"%s", (char*)merged_array +  (i) * SIZE_OF_LINE);
-    //fprintf(stdout,"%s", (char*)array +  (i) * SIZE_OF_LINE);
-  */
-  }
+  
+  for(int i =0; i < array_length; i++) {
+    if(merge_direction == TRUE)
+      fprintf(stdout,"%s", (char*)merged_array +  (i) * SIZE_OF_LINE);
+    else
+      fprintf(stdout,"%s", (char*)array +  (i) * SIZE_OF_LINE);
+    }
+  
   
   
   printf("Result: %d seconds %0.3lf milliseconds\n", response_time.seconds, 

@@ -2,12 +2,17 @@
 #define _UTILS_H
 #endif
 
+#define TRUE 1
+#define FALSE 0
 #define MAXLINES 500000
 #define CHARS_PER_LINE 200
 #define SIZE_OF_LINE sizeof(char) * CHARS_PER_LINE
+#define MAXPROCESSES 16
 
 void* array;
 void* merged_array;
+int total_processes;
+int merge_direction;
 
 struct responsetime {
   int seconds;
@@ -19,5 +24,8 @@ void calculateDeltaTime(struct timeval start, struct timeval end, struct respons
 void swap(int i, int j);
 int partition(int left, int right);
 void quick_sort(int left, int right);
+int isPowerOfTwo(int n);
+int exponentOfPowerOf2(int n);
+void change_merge_direction();
 
 
