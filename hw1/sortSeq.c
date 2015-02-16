@@ -130,7 +130,6 @@ void quick_sort2(int left, int right) {
 int main(int argc, char **argv) {
   
   char *filename;
-  int array_length;
   struct timeval startTime, endTime;
   struct responsetime response_time;
   

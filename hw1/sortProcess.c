@@ -78,7 +78,7 @@ void merge(int left, int mid, int right, int merge_direction)
 int main(int argc, char **argv) {
   
   char *filename;
-  int array_length, total_merge_iterations;
+  int total_merge_iterations;
   struct timeval startTime, endTime;
   struct responsetime response_time;
   pid_t kidpid[MAXPROCESSES], returnpid;

@@ -13,10 +13,17 @@ void* array;
 void* merged_array;
 int total_processes;
 int merge_direction;
+int array_length;
 
 struct responsetime {
   int seconds;
   double milliseconds;
+};
+
+struct thread_args {
+  int arg1;
+  int arg2;
+  int arg3;
 };
 
 int createArrayfromFile(char *filename);
