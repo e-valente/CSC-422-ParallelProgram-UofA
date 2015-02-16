@@ -1,5 +1,6 @@
 CC=gcc
-CFLAGS=-Wall -std=gnu99 -O2 -march=native -lm
+#CFLAGS=-Wall -std=gnu99 -O2 -march=native -lm
+CFLAGS=-Wall -std=gnu99 -lm
 CFLAGS-DEBUG=-Wall -std=gnu99 -g -DDEBUG=1
 
 all: sortSeq sortProcess sortThread

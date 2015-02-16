@@ -130,8 +130,7 @@ void quick_sort2(int left, int right) {
 int main(int argc, char **argv) {
   
   char *filename;
-  struct timeval startTime, endTime;
-  struct responsetime response_time;
+  struct timeval startTime, endTime, responseTime;
   
   if(argc < 2) {
     fprintf(stderr, "Usage: %s <input_file>\n\n", argv[0]);
@@ -156,19 +155,15 @@ int main(int argc, char **argv) {
   quick_sort(0, array_length -1);
   gettimeofday(&endTime, NULL);
   
-  calculateDeltaTime(startTime, endTime, &response_time);
+  calculateDeltaTime(startTime, endTime, &responseTime);
   
   
-  
-  
-  //print the content case debug is set
-  if(DEBUG) {
   for(int i =0; i < array_length; i++)
     fprintf(stdout,"%s", (char*)array +  (i) * SIZE_OF_LINE);
-  }
   
-  printf("Result: %d seconds %0.3lf milliseconds\n", response_time.seconds, 
-	 response_time.milliseconds);
+  
+  printf("runtime: %ld seconds, %ld microseconds\n", responseTime.tv_sec, responseTime.tv_usec);
+
       
   
   

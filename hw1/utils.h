@@ -27,7 +27,7 @@ struct thread_args {
 };
 
 int createArrayfromFile(char *filename);
-void calculateDeltaTime(struct timeval start, struct timeval end, struct responsetime *res);
+void calculateDeltaTime(struct timeval start, struct timeval end, struct timeval *res);
 void swap(int i, int j);
 int partition(int left, int right);
 void quick_sort(int left, int right);

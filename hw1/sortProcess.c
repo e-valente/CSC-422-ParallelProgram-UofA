@@ -79,8 +79,7 @@ int main(int argc, char **argv) {
   
   char *filename;
   int total_merge_iterations;
-  struct timeval startTime, endTime;
-  struct responsetime response_time;
+  struct timeval startTime, endTime, responseTime;
   pid_t kidpid[MAXPROCESSES], returnpid;
   int kid_status;
   
@@ -180,8 +179,7 @@ int main(int argc, char **argv) {
     }//for    
     
   }
-  
-  printf("total_merge_iterations %d\n", total_merge_iterations);
+ 
   
   if(total_merge_iterations == 0 && total_processes > 2)
     change_merge_direction();
@@ -192,11 +190,9 @@ int main(int argc, char **argv) {
   
 
   
-  calculateDeltaTime(startTime, endTime, &response_time);
+  calculateDeltaTime(startTime, endTime, &responseTime);
   
  
-  //print the content case debug is set
-  
   for(int i =0; i < array_length; i++) {
     if(merge_direction == TRUE)
       fprintf(stdout,"%s", (char*)merged_array +  (i) * SIZE_OF_LINE);
@@ -205,9 +201,7 @@ int main(int argc, char **argv) {
     }
   
   
-  
-  printf("Result: %d seconds %0.3lf milliseconds\n", response_time.seconds, 
-	 response_time.milliseconds);
+    printf("runtime: %ld seconds, %ld microseconds\n", responseTime.tv_sec, responseTime.tv_usec);
       
   
   

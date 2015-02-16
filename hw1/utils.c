@@ -27,8 +27,7 @@ int createArrayfromFile(char *filename)
   
 }
 
-void calculateDeltaTime(struct timeval start, struct timeval end, struct responsetime *res) {
-  double milliseconds;
+void calculateDeltaTime(struct timeval start, struct timeval end, struct timeval *res) {
   int seconds;
   int usecs;
   
@@ -40,11 +39,10 @@ void calculateDeltaTime(struct timeval start, struct timeval end, struct respons
     usecs += 1000000;
   }
   
-  milliseconds = 0.00000;
-  milliseconds += usecs * 0.001;
+ 
+  res->tv_sec = seconds;
+  res->tv_usec = usecs;
   
-  res->seconds = seconds;
-  res->milliseconds = milliseconds;
 }
 
 void swap(int i, int j) {

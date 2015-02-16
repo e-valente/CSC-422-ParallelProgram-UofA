@@ -126,8 +126,7 @@ main( int argc, char *argv[] ) {
    long i, total_merge_iterations;
    int numThreads;
    char *filename;
-   struct timeval startTime, endTime;
-   struct responsetime response_time;
+   struct timeval startTime, endTime, responseTime;
    pthread_attr_t attr;
    pthread_t threadid[MAXPROCESSES];
 
@@ -236,7 +235,7 @@ main( int argc, char *argv[] ) {
   gettimeofday(&endTime, NULL);
   change_merge_direction();
   
-  calculateDeltaTime(startTime, endTime, &response_time);
+  calculateDeltaTime(startTime, endTime, &responseTime);
   
    
    //change_merge_direction();
@@ -249,8 +248,7 @@ main( int argc, char *argv[] ) {
   
   
   
- printf("Result: %d seconds %0.3lf milliseconds\n", response_time.seconds, 
-	 response_time.milliseconds);
+   printf("runtime: %ld seconds, %ld microseconds\n", responseTime.tv_sec, responseTime.tv_usec);
       
   
   
