@@ -43,7 +43,6 @@ int main(int argc, char **argv) {
   
   filename = argv[2];
   
-  
   /*alloc our array and the auxiliar array (=merged_array) to the merging process*/
   array = mmap(NULL, sizeof(char) * (MAXLINES * CHARS_PER_LINE), PROT_READ | PROT_WRITE, 
        MAP_ANONYMOUS | MAP_SHARED, -1, 0);
@@ -124,8 +123,7 @@ int main(int argc, char **argv) {
       * FALSE: array->merged_array
       * TRUE: merged_array -> array
       */
-       change_merge_direction();
-     
+       change_merge_direction();    
  
     }//for    
     
@@ -150,8 +148,7 @@ int main(int argc, char **argv) {
     else
       fprintf(stdout,"%s", (char*)array +  (i) * SIZE_OF_LINE);
     }
-  
-  
+   
   /*prints to stderr our result*/
   fprintf(stderr, "runtime: %ld seconds, %ld microseconds\n", responseTime.tv_sec, responseTime.tv_usec);
 

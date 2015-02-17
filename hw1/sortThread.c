@@ -24,7 +24,6 @@ void *executeQuickSortUsingThread(void *arg){
    pthread_exit(NULL);
 }
   
-
 /*function that threads executes for merging process*/
 void *executeMergeUsingThread(void *arg) {
   
@@ -45,7 +44,6 @@ void *executeMergeUsingThread(void *arg) {
   
 }  
 
-
 int main( int argc, char *argv[] ) {
    long i, total_merge_iterations;
    int numThreads;
@@ -53,8 +51,7 @@ int main( int argc, char *argv[] ) {
    struct timeval startTime, endTime, responseTime;
    pthread_attr_t attr;
    pthread_t threadid[MAXPROCESSES];
-
-   
+ 
     if(argc < 3) {
     fprintf(stderr, "Usage: %s <# threads> <input_file>\n\n", argv[0]);
     exit(1);
@@ -107,9 +104,7 @@ int main( int argc, char *argv[] ) {
   
   /*waits for all quicksort process*/
   for(int j = 0; j < total_processes; j++) 
-     pthread_join(threadid[j], NULL);
-     
-  
+     pthread_join(threadid[j], NULL);  
    
   /*initiates the merging direction.
    * FALSE: array->merged_array
@@ -126,8 +121,7 @@ int main( int argc, char *argv[] ) {
   struct thread_args mythreadargs[MAXPROCESSES];
   //if > 1 we have 2 or more processes
   if(total_merge_iterations >0 ) {
-    
-	
+    	
     for(int i=0; i<total_merge_iterations; i++) {
       
       //for example: for 4 threads total_merge_iterations = 1
@@ -139,8 +133,7 @@ int main( int argc, char *argv[] ) {
 	  mythreadargs[j].arg2 = j;
 	  pthread_create(&threadid[j], &attr, executeMergeUsingThread, (void *) &mythreadargs[j]);
       }
-    
-	
+    	
       //waits all threads for merging
       for(int j=0; j < total_processes_to_merge; j++)
 	 pthread_join(threadid[j], NULL);
@@ -149,8 +142,7 @@ int main( int argc, char *argv[] ) {
       * FALSE: array->merged_array
       * TRUE: merged_array -> array
       */
-      change_merge_direction();
-     
+      change_merge_direction();    
  
     }//for    
     

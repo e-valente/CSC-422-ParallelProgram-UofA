@@ -4,7 +4,6 @@
 
 #include "utils.h"
 
-
 int createArrayfromFile(char *filename)
 {
   
@@ -39,7 +38,6 @@ void calculateDeltaTime(struct timeval start, struct timeval end, struct timeval
     usecs += 1000000;
   }
   
- 
   res->tv_sec = seconds;
   res->tv_usec = usecs;
   
@@ -49,10 +47,8 @@ void swap(int i, int j) {
   char tmp[SIZE_OF_LINE];
   
   strcpy(tmp, (array + i * SIZE_OF_LINE));
-  
   strcpy((array + i * SIZE_OF_LINE), (array + j * SIZE_OF_LINE));
   strcpy((array + j * SIZE_OF_LINE), tmp); 
-  
   
 }
 
@@ -70,10 +66,8 @@ int partition(int left, int right) {
     }
   }
   
-  swap(left, i);
-  
+  swap(left, i); 
   return i;
-  
 }
 
 void quick_sort(int left, int right) {
@@ -84,8 +78,7 @@ void quick_sort(int left, int right) {
   
     quick_sort(left, r-1);
     quick_sort(r+1, right);    
-  }
-  
+  }  
   
 }
 
@@ -129,8 +122,7 @@ void merge(int left, int mid, int right, int merge_direction)
     
     i = left;
     j = mid;
-    int k = left;
-    
+    int k = left;   
     
    //array -> merged_array
     if(merge_direction == FALSE) {
@@ -168,8 +160,5 @@ void merge(int left, int mid, int right, int merge_direction)
       while(j < right) 
        strcpy((array + k++ * SIZE_OF_LINE), (merged_array + j++ * SIZE_OF_LINE));
       
-      
     }
-    
-
 }  
