@@ -34,5 +34,7 @@ void quick_sort(int left, int right);
 int isPowerOfTwo(int n);
 int exponentOfPowerOf2(int n);
 void change_merge_direction();
+//mid contains the last vector's right session 
+void merge(int left, int mid, int right, int merge_direction);
 
 

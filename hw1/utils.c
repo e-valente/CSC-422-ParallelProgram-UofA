@@ -120,3 +120,56 @@ void change_merge_direction() {
  else
   merge_direction = FALSE;
 }
+
+//mid contains the last vector's right session 
+//mid contains the last vector's right session 
+void merge(int left, int mid, int right, int merge_direction)
+{
+    int i, j;
+    
+    i = left;
+    j = mid;
+    int k = left;
+    
+    
+   //array -> merged_array
+    if(merge_direction == FALSE) {
+      while(i < mid && j < right) {
+	if(strcmp((array + i * SIZE_OF_LINE), (array + j * SIZE_OF_LINE)) < 0) 
+	    strcpy((merged_array + k++ * SIZE_OF_LINE), (array + i++ * SIZE_OF_LINE));
+	
+	else 
+	  strcpy((merged_array + k++ * SIZE_OF_LINE), (array + j++ * SIZE_OF_LINE));   
+	
+      }
+      
+      while(i < mid) 
+	strcpy((merged_array + k++ * SIZE_OF_LINE), (array + i++ * SIZE_OF_LINE));
+      
+      while(j < right) 
+       strcpy((merged_array + k++ * SIZE_OF_LINE), (array + j++ * SIZE_OF_LINE));
+    }
+    
+    //direction != 0
+    //=> merged_array -> array
+    else {
+      while(i < mid && j < right) {
+	if(strcmp((merged_array + i * SIZE_OF_LINE), (merged_array + j * SIZE_OF_LINE)) < 0) 
+	    strcpy((array + k++ * SIZE_OF_LINE), (merged_array + i++ * SIZE_OF_LINE));
+	
+	else 
+	  strcpy((array + k++ * SIZE_OF_LINE), (merged_array + j++ * SIZE_OF_LINE));   
+	
+      }
+      
+      while(i < mid) 
+	strcpy((array + k++ * SIZE_OF_LINE), (merged_array + i++ * SIZE_OF_LINE));
+      
+      while(j < right) 
+       strcpy((array + k++ * SIZE_OF_LINE), (merged_array + j++ * SIZE_OF_LINE));
+      
+      
+    }
+    
+
+}  
